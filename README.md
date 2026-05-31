@@ -9,25 +9,25 @@
 [![pandas](https://img.shields.io/badge/pandas-150458?style=flat&logo=pandas&logoColor=white)](https://pandas.pydata.org)
 [![Tkinter](https://img.shields.io/badge/Tkinter-FFD43B?style=flat&logo=python&logoColor=black)](https://docs.python.org/3/library/tkinter.html)
 
-A Python utility that builds concise, AI-friendly JSON profiles of CSV files. Includes both a Tkinter GUI and a command-line interface, so you can explore data interactively or automate profiling in scripts.
+A Python utility that builds concise, AI-friendly JSON profiles of CSV files. It ships with both a Tkinter GUI and a command-line interface, so you can explore data interactively or automate profiling in scripts.
 
-------
+---
 
 ## What the tool does
 
 | Feature                          | Why it matters                                               |
 | -------------------------------- | ------------------------------------------------------------ |
-| **AI-Optimized JSON output**     | Gives downstream assistants (ChatGPT, Claude, etc.) exactly the fields they need. |
-| **Dual UI: GUI + CLI**           | Pick the workflow that fits: point-and-click or batch processing. |
-| **Smart type detection**         | Auto-recognizes numeric, text, date/time, boolean, categorical, and currency columns. |
+| **AI-optimized JSON output**     | Gives downstream assistants (ChatGPT, Claude, etc.) the fields they need. |
+| **GUI and CLI**                  | Point-and-click for one file, batch processing for many.     |
+| **Type detection**               | Recognizes numeric, text, date/time, boolean, categorical, and currency columns. |
 | **Currency detection**           | Recognizes formatted currency values in any major currency (USD, EUR, GBP, JPY, and all Unicode currency symbols) and analyzes them as numeric data. |
-| **Rich numeric analysis**        | Means, medians, quartiles, clipped statistics, and raw outlier values reported separately. |
+| **Numeric analysis**             | Means, medians, quartiles, clipped statistics, and raw outlier values reported separately. |
 | **Data quality warnings**        | Flags columns where raw min/max values are statistically suspect, using separate thresholds for numeric vs. currency columns. |
-| **Robust file handling**         | Tries multiple encodings and engines (BOM-aware), multiple separator strategies, warns on huge files. |
+| **Resilient file handling**      | Tries multiple encodings and engines (BOM-aware), multiple separator strategies, and warns on huge files. |
 | **Thread-safe GUI**              | The UI stays responsive while the profiler works in the background. |
-| **Comprehensive error handling** | Friendly messages for missing files, permission problems, malformed CSVs, etc. |
+| **Error handling**               | Plain-language messages for missing files, permission problems, malformed CSVs, and so on. |
 
-------
+---
 
 ## Requirements
 
@@ -47,9 +47,9 @@ sudo apt-get install python3-tk
 sudo dnf install python3-tkinter   # or: sudo yum install tkinter
 ```
 
-> **Note:** `tkinter`, `threading`, `queue`, `argparse`, `json`, `os`, `re`, `pathlib` are part of the Python standard library and need no extra installation.
+> **Note:** `tkinter`, `threading`, `queue`, `argparse`, `json`, `os`, `re`, and `pathlib` are part of the Python standard library and need no extra installation.
 
-------
+---
 
 ## Installation
 
@@ -61,7 +61,7 @@ curl -O https://raw.githubusercontent.com/hihipy/ai-csv-profiler/main/ai_csv_pro
 chmod +x ai_csv_profiler.py
 ```
 
-------
+---
 
 ## Usage
 
@@ -98,11 +98,11 @@ Additional flags (shown in `--help`):
 | `--simple`         | Skip heavy statistics (faster, less detail).               |
 | `-v` / `--verbose` | Show progress messages and any warnings on the console.    |
 
-------
+---
 
 ## Output format
 
-The profiler writes a single JSON document. Below is a trimmed example that illustrates the schema:
+The profiler writes a single JSON document. Below is a trimmed example that shows the schema:
 
 ```json
 {
@@ -232,16 +232,16 @@ The profiler writes a single JSON document. Below is a trimmed example that illu
 
 ### `warnings` vs `info`
 
-The output separates two distinct message types:
+The output keeps two message types separate:
 
 | Field      | Contains                                                     |
 | ---------- | ------------------------------------------------------------ |
-| `warnings` | Genuine data quality or file issues (e.g. large file, fallback parsing used, statistically suspect values). |
-| `info`     | Informational messages about how the file was successfully read (encoding, separator, and engine used). |
+| `warnings` | Real data quality or file issues (e.g. large file, fallback parsing used, statistically suspect values). |
+| `info`     | Notes about how the file was successfully read (encoding, separator, and engine used). |
 
 A clean run will have an empty `warnings` array and one entry in `info`.
 
-------
+---
 
 ## Tuning the outlier warning thresholds
 
@@ -254,7 +254,7 @@ _OUTLIER_SD_THRESHOLD_CURRENCY = 30  # for currency columns (salary, revenue, et
 
 **Why two thresholds?**
 
-Financial data naturally has long tails. A column containing both a $0.01 part-time allocation and a $233K grant commitment is real data — not corrupt. The currency threshold is set much higher to avoid false positives on that kind of spread. Plain numeric columns (like FTE, which should sit between 0 and 1) are held to a tighter standard.
+Financial data naturally has long tails. A column containing both a $0.01 part-time allocation and a $233K grant commitment is real data, not corrupt. The currency threshold is set much higher to avoid false positives on that kind of spread. Plain numeric columns (like FTE, which should sit between 0 and 1) are held to a tighter standard.
 
 **Warning message format:**
 
@@ -279,7 +279,7 @@ Open `ai_csv_profiler.py` and find the two constants near the top of the file (j
 
 **Rule of thumb:** if you know your data well and a warning is flagging a column that is clean, raise that column type's threshold by 10 and re-run. If a corrupt value is slipping through undetected, lower the threshold by 2 and re-run.
 
-------
+---
 
 ## Technical notes
 
@@ -296,20 +296,20 @@ Open `ai_csv_profiler.py` and find the two constants near the top of the file (j
 | **Memory usage**        | `df.memory_usage(deep=True)` is reported in `metadata`.      |
 | **Error resilience**    | Every public method catches exceptions and returns a sensible default so the program never crashes. |
 
-------
+---
 
 ## CSV reading strategy
 
-The profiler attempts to read each file in four stages, stopping as soon as one succeeds:
+The profiler tries to read each file in four stages, stopping as soon as one succeeds:
 
-1. **Strategy 1** — Iterates all encoding + separator combinations, trying both the C engine (fast, strict) and Python engine (slower, more permissive) for each. This is the primary path and handles the vast majority of files including BOM-encoded CSVs.
-2. **Strategy 1.5** — Tries common encodings with pandas auto-separator detection. Catches edge cases that slip past Strategy 1.
-3. **Strategy 2** — UTF-8 with full auto-separator fallback. If this is reached, a warning is added to the output.
-4. **Strategy 3** — Manual line-by-line text parsing as a last resort.
+1. **Strategy 1** - Iterates all encoding + separator combinations, trying both the C engine (fast, strict) and Python engine (slower, more permissive) for each. This is the primary path and handles the vast majority of files, including BOM-encoded CSVs.
+2. **Strategy 1.5** - Tries common encodings with pandas auto-separator detection. Catches edge cases that slip past Strategy 1.
+3. **Strategy 2** - UTF-8 with full auto-separator fallback. If this is reached, a warning is added to the output.
+4. **Strategy 3** - Manual line-by-line text parsing as a last resort.
 
 A successful read is always recorded in the `info` field, not `warnings`. The info message includes the encoding, separator, and engine that succeeded (e.g. `"Read with encoding=utf-8-sig, separator=',', engine=c"`).
 
-------
+---
 
 ## Error handling
 
@@ -324,7 +324,7 @@ A successful read is always recorded in the `info` field, not `warnings`. The in
 
 All messages are logged to the GUI's text pane and printed to `stderr` in CLI mode.
 
-------
+---
 
 ## Typical use cases
 
@@ -334,7 +334,7 @@ All messages are logged to the GUI's text pane and printed to `stderr` in CLI mo
 - **Pre-processing planning** - Decide which columns need cleaning, encoding, or transformation before feeding data to a model.
 - **Documentation generation** - Export the JSON as part of a dataset's metadata bundle.
 
-------
+---
 
 ## License
 
@@ -345,6 +345,6 @@ You are free to:
 - Use it at your job
 
 Under these terms:
-- **Attribution** — Credit the original author
-- **NonCommercial** — No selling or commercial products
-- **ShareAlike** — Derivatives must use the same license
+- **Attribution:** Credit the original author
+- **NonCommercial:** No selling or commercial products
+- **ShareAlike:** Derivatives must use the same license
