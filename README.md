@@ -1,5 +1,14 @@
 # ai-csv-profiler
 
+[![Link Check](https://github.com/hihipy/ai-csv-profiler/actions/workflows/links.yml/badge.svg)](https://github.com/hihipy/ai-csv-profiler/actions/workflows/links.yml)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+**Built with**
+
+[![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![pandas](https://img.shields.io/badge/pandas-150458?style=flat&logo=pandas&logoColor=white)](https://pandas.pydata.org)
+[![Tkinter](https://img.shields.io/badge/Tkinter-FFD43B?style=flat&logo=python&logoColor=black)](https://docs.python.org/3/library/tkinter.html)
+
 A Python utility that builds concise, AI-friendly JSON profiles of CSV files. Includes both a Tkinter GUI and a command-line interface, so you can explore data interactively or automate profiling in scripts.
 
 ------
